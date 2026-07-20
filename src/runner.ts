@@ -88,8 +88,11 @@ async function run() {
     await provider.shutdown();
     core.info("Provider shutdown");
   } catch (error) {
-    const message = error instanceof Error ? error : JSON.stringify(error);
-    core.setFailed(message);
+    // This action is best-effort observability tooling; a failure to export
+    // traces should never fail the user's workflow. Surface any error
+    // (HttpError, GitHub API errors, etc.) as a warning instead.
+    const message = error instanceof Error ? error.message : JSON.stringify(error);
+    core.warning(`otel-cicd-action failed but was ignored: ${message}`);
   }
 }
 
