@@ -121,7 +121,7 @@ describe("run", () => {
     expect(core.setOutput).toHaveBeenCalledWith("traceId", "329e58aa53cec7a2beadd2fd0a85c388");
   }, 10_000);
 
-  it("should fail", async () => {
+  it("should warn instead of fail on error", async () => {
     // https://github.com/corentinmusard/otel-cicd-action/actions/runs/111
     process.env["GITHUB_REPOSITORY"] = "corentinmusard/otel-cicd-action";
     runId = "111"; // does not exist
@@ -129,8 +129,10 @@ describe("run", () => {
     await run();
 
     expect(output).toBe("");
-    expect(core.setFailed).toHaveBeenCalledTimes(1);
-    expect(core.setFailed).toHaveBeenCalledWith(expect.any(Error));
+    // Errors are downgraded to warnings so the action never fails the workflow.
+    expect(core.setFailed).not.toHaveBeenCalled();
+    expect(core.warning).toHaveBeenCalledTimes(1);
+    expect(core.warning).toHaveBeenCalledWith(expect.stringContaining("otel-cicd-action failed but was ignored"));
     expect(core.setOutput).not.toHaveBeenCalled();
   }, 10_000);
 });

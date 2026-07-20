@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- Errors (including `HttpError` and other GitHub API errors) are now reported as warnings instead of failing the action, so trace export never fails the user's workflow.
+
 ## [4.0.0] - 2026-02-07
 
 ### ⚠ BREAKING CHANGES

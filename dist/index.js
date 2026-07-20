@@ -28017,25 +28017,13 @@ function setOutput(name, value) {
     process.stdout.write(os.EOL);
     issueCommand('set-output', { name }, toCommandValue(value));
 }
-//-----------------------------------------------------------------------
-// Results
-//-----------------------------------------------------------------------
 /**
- * Sets the action status to failed.
- * When the action exits it will be with an exit code of 1
- * @param message add error issue message
- */
-function setFailed(message) {
-    process.exitCode = ExitCode.Failure;
-    error$1(message);
-}
-/**
- * Adds an error issue
- * @param message error issue message. Errors will be converted to string via toString()
+ * Adds a warning issue
+ * @param message warning issue message. Errors will be converted to string via toString()
  * @param properties optional properties to add to the annotation.
  */
-function error$1(message, properties = {}) {
-    issueCommand('error', toCommandProperties(properties), message instanceof Error ? message.toString() : message);
+function warning(message, properties = {}) {
+    issueCommand('warning', toCommandProperties(properties), message instanceof Error ? message.toString() : message);
 }
 /**
  * Writes info to log with console.log.
@@ -117969,8 +117957,11 @@ async function run() {
         info("Provider shutdown");
     }
     catch (error) {
-        const message = error instanceof Error ? error : JSON.stringify(error);
-        setFailed(message);
+        // This action is best-effort observability tooling; a failure to export
+        // traces should never fail the user's workflow. Surface any error
+        // (HttpError, GitHub API errors, etc.) as a warning instead.
+        const message = error instanceof Error ? error.message : JSON.stringify(error);
+        warning(`otel-cicd-action failed but was ignored: ${message}`);
     }
 }
 
